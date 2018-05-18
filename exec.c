@@ -5,22 +5,55 @@
 #include <sys/types.h> /* for pid_t */
 #include <sys/wait.h> /* for wait */
 
+#define MAX_COUNT 5
+
 int main(int c, char*argv[])
 {
 	char ptr[5][200];
 	FILE *fp = NULL;
-	int i = 0, stat;
+	int i = 0, stat, a;
 	int flag = 1;
 	pid_t g_pid[5];
 	pid_t pid[5];
 	int count = 0;
+	char buf[100];
+	char buf_1[100];
+	char buf_2[] = "cd ..";
+
 	fp = fopen(argv[1], "r+");
 	if (NULL == fp) {
 		perror("Error : ");
 	}
 
+	memset(buf, '\0', sizeof(buf));
+	strcpy(buf, "mkdir -p ");
+	strcat(buf, argv[1]);
+	system(buf);
+	memset(buf, '\0', sizeof(buf));
+	strcpy(buf, "cd  ");
+	strcat(buf, argv[1]);
+	system(buf);
+
+
+
+
 	while(flag) {
-		for (i =0; i < 5; i++) {
+		a = count / MAX_COUNT;
+
+		memset(buf, '\0', sizeof(buf));
+		strcpy(buf, "mkdir -p ");
+		memset(buf_1, '\0', sizeof(buf_1));
+		sprintf(buf_1, "%d", a);
+		strcat(buf, buf_1);
+		system(buf);
+		memset(buf, '\0', sizeof(buf));
+		strcpy(buf, "cd  ");
+		strcat(buf, buf_1);
+		system(buf);
+
+		for (i =0; i < MAX_COUNT && flag; i++) {
+
+
 			memset(ptr[i], '\0', sizeof(ptr[i]));
 			if(NULL != fgets(ptr[i], sizeof(ptr[i])-1, fp)) {
 				count++;
@@ -47,12 +80,13 @@ int main(int c, char*argv[])
 				flag = 0;	
 			}
 		}
-		for (i=0; i<5; i++)
+		for (i=0; i< MAX_COUNT; i++)
 		{
 			pid_t cpid = waitpid(pid[i], &stat, 0);
 			if (WIFEXITED(stat))
 				printf("Child %d terminated with status: %d\n",	cpid, WEXITSTATUS(stat));
 		}
+		system(buf_2);
 	}
 	printf("\n\nTotal count = %d\n", count);
 	return 0;
